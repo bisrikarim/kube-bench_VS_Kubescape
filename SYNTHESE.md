@@ -133,15 +133,3 @@ Pour notre contexte :
 1. **Kubescape** comme outil principal de validation continue
 2. **kube-bench** en one-shot pour le hardening initial du cluster
 3. Intégrer Kubescape dans le pipeline CI/CD (scan des manifests avant merge)
-
----
-
-## Plan POC
-
-1. Installer k3s sur une VM de test
-2. Déployer des workloads représentatifs (ce qu'on a fait dans la demo)
-3. Scanner avec les deux outils
-4. Valider que Kubescape détecte bien les non-conformités par namespace
-5. Tester l'intégration CI/CD (GitHub Action)
-6. Valider le format des rapports (JSON pour exploitation, PDF pour la compliance)
-7. Présenter les résultats à l'équipe sécu
