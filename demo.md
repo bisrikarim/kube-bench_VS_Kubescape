@@ -4,14 +4,6 @@
 
 ---
 
-## Prérequis
-
-- WSL2 avec Ubuntu 22.04
-- Accès sudo
-- Connexion internet (pour les install)
-
----
-
 ## Partie 1 — Monter le cluster k3s
 
 ```bash
@@ -33,13 +25,13 @@ kubectl get pods -A
 
 ## Partie 2 — Déployer des workloads de test
 
-On va créer un environnement qui ressemble à notre prod : des namespaces clients avec des pods AWX, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
+On va créer un environnement de test : des namespaces clients avec des pods, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
 
 ```bash
 # créer les namespaces
 kubectl apply -f workloads/namespaces.yaml
 
-# déployer un workload propre (simule AWX côté client)
+# déployer un workload propre
 kubectl apply -f workloads/good-pod.yaml
 
 # déployer des workloads pourris (pour tester la détection)
