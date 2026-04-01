@@ -16,6 +16,20 @@ Tests réalisés sur un cluster k3s v1.29 (WSL2, Ubuntu 22.04) avec :
 | Kubescape | NSA sur `bad-practices` | 12 Failed | 50% | **Oui** — privileged, hostPID, hostNetwork, capabilities, non-root, no limits |
 | Kubescape | NSA sur `client-alpha` | 5 Failed | 69% | — namespace propre, reste mineurs |
 | Kubescape | Scan offline bad-pods.yaml | 5 findings | — | **Oui** — sans cluster, shift-left |
+| Kubescape | Opérateur (continuous scan) | résultats par namespace | — | Scans auto, résultats en CRDs K8s natifs |
+
+### Opérateur Kubescape (Helm)
+
+5 pods dans le namespace `kubescape` :
+- `kubescape` — scanner principal
+- `kubevuln` — scan de vulnérabilités images
+- `node-agent` — DaemonSet, observation runtime
+- `operator` — orchestration
+- `storage` — stockage résultats
+
+Résultats consultables directement en `kubectl` :
+- `kubectl get workloadconfigurationscansummaries -A` → vue globale par namespace
+- `kubectl get workloadconfigurationscans -n <namespace>` → détail par workload
 
 ---
 
@@ -76,16 +90,31 @@ Tests réalisés sur un cluster k3s v1.29 (WSL2, Ubuntu 22.04) avec :
 
 ### 2. Authentification
 - **kube-bench** : Pas d'auth K8s. Il tourne sur le node avec sudo.
-- **Kubescape** : Via kubeconfig (contexte courant) ou ServiceAccount si déployé dans le cluster.
+- **Kubescape** :
+  - **CLI** : via kubeconfig (contexte courant), zéro config
+  - **Opérateur** : via ServiceAccounts dédiés créés automatiquement par le Helm chart. Constaté dans le namespace `kubescape` :
+    - `kubescape` (scanner principal)
+    - `kubevuln` (scan de vulnérabilités images)
+    - `node-agent` (observation runtime, DaemonSet)
+    - `operator` (orchestration des scans)
+    - `storage` (stockage des résultats en CRD)
 
 ### 3. RBAC nécessaire
 - **kube-bench** : Aucun RBAC K8s. Juste sudo sur le node.
-- **Kubescape** : ClusterRole en lecture seule sur les ressources. En gros :
-  - `get`, `list` sur pods, deployments, daemonsets, services, configmaps, secrets (metadata), nodes, namespaces, networkpolicies, roles, rolebindings, clusterroles, clusterrolebindings, podsecuritypolicies
+- **Kubescape** : un ClusterRole `kubescape` créé automatiquement par le Helm chart. Extrait réel du cluster :
+  - `get`, `watch`, `list` sur : pods, namespaces, nodes, configmaps, services, serviceaccounts, secrets, deployments, statefulsets, daemonsets, replicasets, jobs, cronjobs, networkpolicies, ingresses, roles, rolebindings, clusterroles, clusterrolebindings, podsecuritypolicies, limitranges, resourcequotas, events, persistentvolumes, persistentvolumeclaims
+  - `create`, `get`, `update`, `patch` sur les CRDs Kubescape : `workloadconfigurationscans`, `workloadconfigurationscansummaries`
+  - `update` sur `namespaces` (pour poser des labels)
+  - **Pas de `delete`, pas de `create` sur les ressources applicatives** → read-only sur le cluster, safe pour la prod
 
 ### 4. Scope namespace
 - **kube-bench** : Non. Il check la config du node, pas les workloads. La notion de namespace n'a pas de sens.
-- **Kubescape** : Oui. `--include-namespaces client-alpha` → il scan que ce namespace. Exactement ce qu'on veut pour nos clients.
+- **Kubescape** :
+  - **CLI** : `--include-namespaces client-alpha` → scan ciblé sur un namespace
+  - **Opérateur** : les résultats sont stockés **par namespace** dans des CRDs. Constaté :
+    - `kubectl get workloadconfigurationscans -n bad-practices` → 3 ressources scannées
+    - `kubectl get workloadconfigurationscans -n client-alpha` → 4 ressources scannées
+  - Exactement ce qu'il nous faut pour le cloisonnement SOC par client
 
 ### 5. Limitations k3s
 - **kube-bench** :
