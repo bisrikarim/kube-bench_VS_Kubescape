@@ -2,12 +2,12 @@
 
 ## En résumé
 
-Les deux outils ne font pas la même chose. Ils sont **complémentaires** mais si on doit en choisir un seul pour notre contexte (multi-tenant AWX sur k3s), c'est **Kubescape**.
+Les deux outils ne font pas la même chose. Ils sont **complémentaires** mais si on doit en choisir un seul pour notre contexte, c'est **Kubescape**.
 
 ## Résultats du POC
 
 Tests réalisés sur un cluster k3s v1.29 (WSL2, Ubuntu 22.04) avec :
-- 1 namespace `client-alpha` : workloads propres (AWX simulé, SecurityContext, limits, probes)
+- 1 namespace `client-alpha` : workloads propres (SecurityContext, limits, probes)
 - 1 namespace `bad-practices` : 6 pods volontairement non conformes (privileged, root, hostPath, hostNetwork, capabilities, no limits)
 
 | Outil | Scan | Failed | Score | Détecte les bad pods ? |
@@ -132,7 +132,7 @@ Résultats consultables directement en `kubectl` :
 Pour notre contexte :
 - **Multi-tenant** (besoin de scanner par namespace) → Kubescape
 - **k3s** (pas de complication de paths) → Kubescape
-- **Besoin de scanner les workloads** (pods AWX) → Kubescape
+- **Besoin de scanner les workloads**  → Kubescape
 - **CI/CD** (intégration future) → Kubescape
 - **Shift-left** (scan YAML avant deploy) → Kubescape
 
