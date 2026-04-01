@@ -114,7 +114,6 @@ Résultats consultables directement en `kubectl` :
   - **Opérateur** : les résultats sont stockés **par namespace** dans des CRDs. Constaté :
     - `kubectl get workloadconfigurationscans -n bad-practices` → 3 ressources scannées
     - `kubectl get workloadconfigurationscans -n client-alpha` → 4 ressources scannées
-  - Exactement ce qu'il nous faut pour le cloisonnement SOC par client
 
 ### 5. Limitations k3s
 - **kube-bench** :
