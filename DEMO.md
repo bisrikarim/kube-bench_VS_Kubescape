@@ -4,14 +4,6 @@
 
 ---
 
-## Prérequis
-
-- WSL2 avec Ubuntu 22.04
-- Accès sudo
-- Connexion internet (pour les install)
-
----
-
 ## Partie 0 — Clean complet avant de commencer
 
 ```bash
