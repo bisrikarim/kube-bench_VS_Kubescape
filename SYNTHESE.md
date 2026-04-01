@@ -115,15 +115,6 @@ Résultats consultables directement en `kubectl` :
     - `kubectl get workloadconfigurationscans -n bad-practices` → 3 ressources scannées
     - `kubectl get workloadconfigurationscans -n client-alpha` → 4 ressources scannées
 
-### 5. Limitations k3s
-- **kube-bench** :
-  - Il faut le benchmark spécifique `k3s-cis-1.24` + le dossier `cfg/` complet
-  - Les checks etcd (2.1 à 2.5) FAIL car k3s utilise embedded etcd sans les mêmes flags
-  - Les audits `journalctl` échouent souvent (logs k3s pas au path attendu)
-  - Le `stat -c %a` plante sur WSL (erreur "cannot statx '%a'")
-  - Globalement : **ça tourne mais il faut bidouiller**
-- **Kubescape** : Aucune limitation constatée. Il passe par l'API K8s, la distro est transparente.
-
 ---
 
 ## Recommandation
