@@ -4,6 +4,44 @@
 
 ---
 
+## Prérequis
+
+- WSL2 avec Ubuntu 22.04
+- Accès sudo
+- Connexion internet (pour les install)
+
+---
+
+## Partie 0 — Clean complet avant de commencer
+
+```bash
+# désinstaller l'opérateur kubescape si présent
+helm uninstall kubescape -n kubescape 2>/dev/null; kubectl delete ns kubescape --ignore-not-found
+
+# supprimer les workloads de test
+kubectl delete -f workloads/bad-pods.yaml --ignore-not-found
+kubectl delete -f workloads/good-pod.yaml --ignore-not-found
+kubectl delete -f workloads/namespaces.yaml --ignore-not-found
+
+# supprimer kube-bench
+sudo rm -f /usr/local/bin/kube-bench
+sudo rm -rf /etc/kube-bench
+rm -rf /tmp/cfg /tmp/kube-bench*
+
+# supprimer kubescape
+rm -rf ~/.kubescape
+
+# désinstaller k3s complètement
+/usr/local/bin/k3s-uninstall.sh 2>/dev/null
+
+# vérifier qu'il ne reste rien
+kubectl get pods -A 2>/dev/null || echo "Cluster supprimé ✓"
+which kube-bench 2>/dev/null || echo "kube-bench supprimé ✓"
+which kubescape 2>/dev/null || echo "kubescape supprimé ✓"
+```
+
+---
+
 ## Partie 1 — Monter le cluster k3s
 
 ```bash
@@ -25,13 +63,13 @@ kubectl get pods -A
 
 ## Partie 2 — Déployer des workloads de test
 
-On va créer un environnement de test : des namespaces clients avec des pods, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
+On va créer un environnement qui ressemble à notre prod : des namespaces clients avec des pods AWX, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
 
 ```bash
 # créer les namespaces
 kubectl apply -f workloads/namespaces.yaml
 
-# déployer un workload propre
+# déployer un workload propre (simule AWX côté client)
 kubectl apply -f workloads/good-pod.yaml
 
 # déployer des workloads pourris (pour tester la détection)
