@@ -179,9 +179,49 @@ kubescape scan workloads/bad-pods.yaml
 
 ---
 
-## Partie 6 — Nettoyage
+## Partie 6 — Opérateur Kubescape (mode continu)
+
+Kubescape peut aussi tourner en continu dans le cluster comme opérateur.
 
 ```bash
+# installer via Helm
+helm repo add kubescape https://kubescape.github.io/helm-charts/
+helm repo update
+helm upgrade --install kubescape kubescape/kubescape-operator \
+  -n kubescape --create-namespace \
+  --set clusterName=$(kubectl config current-context) \
+  --set capabilities.continuousScan=enable
+
+# vérifier les pods
+kubectl get pods -n kubescape
+
+# voir les ServiceAccounts créés (→ répond à Q2 auth)
+kubectl get serviceaccounts -n kubescape
+
+# voir le ClusterRole et les droits RBAC (→ répond à Q3 RBAC)
+kubectl get clusterrole kubescape -o yaml
+
+# voir les résultats de compliance par namespace (→ répond à Q4 scope)
+kubectl get workloadconfigurationscansummaries -A
+kubectl get workloadconfigurationscans -n bad-practices
+kubectl get workloadconfigurationscans -n client-alpha
+```
+
+Ce qu'on montre :
+- L'opérateur crée ses propres ServiceAccounts (kubescape, kubevuln, node-agent, operator, storage)
+- Le ClusterRole est en **lecture seule** sur les ressources du cluster (get/watch/list)
+- Les résultats sont stockés **par namespace** dans des CRDs → cloisonnement natif
+- Le scan tourne en continu, pas besoin de relancer manuellement
+
+---
+
+## Partie 7 — Nettoyage
+
+```bash
+# supprimer l'opérateur kubescape
+helm uninstall kubescape -n kubescape
+kubectl delete ns kubescape
+
 # supprimer les workloads de test
 kubectl delete -f workloads/bad-pods.yaml
 kubectl delete -f workloads/good-pod.yaml
