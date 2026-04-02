@@ -1,6 +1,6 @@
 # CIS Kubernetes Benchmark : auditer la sécurité du cluster kubernetes
 
-Le CIS Kubernetes Benchmark est un ensemble de recommandations de sécurité développé par le Center for Internet Security (CIS). kube-bench est l'outil open-source de référence pour vérifier automatiquement la conformité de votre cluster à ces guidelines. En quelques minutes, vous obtenez un rapport détaillé des points à corriger.
+Le CIS Kubernetes Benchmark est un ensemble de recommandations de sécurité développé par le Center for Internet Security (CIS). kube-bench est l'outil open-source de référence pour vérifier automatiquement la conformité du cluster à ces guidelines. En quelques minutes, vous obtenez un rapport détaillé des points à corriger.
 
 > Le CIS Benchmark fait partie du domaine Cluster Setup (15%) de la certification CKS. on doit savoir utiliser kube-bench et interpréter ses résultats.
 
@@ -410,7 +410,7 @@ kube-bench détecte automatiquement certaines distributions et applique le profi
 
 ### Exemples de faux positifs courants
 
-> Ne corrigez pas aveuglément tous les `FAIL`. Certains peuvent être intentionnels ou liés à votre distribution.
+> Ne corrigez pas aveuglément tous les `FAIL`.
 
 **RKE2/k3s :**
 - Les fichiers de configuration sont dans `/etc/rancher/` au lieu de `/etc/kubernetes/`
@@ -425,7 +425,7 @@ kube-bench détecte automatiquement certaines distributions et applique le profi
 
 ### Documenter les exceptions
 
-Créez un fichier d'exceptions pour votre équipe :
+Création un fichier d'exceptions :
 
 ```yaml
 # exceptions-cis.yaml - Contrôles ignorés volontairement
@@ -457,9 +457,9 @@ exceptions:
 
 1. **Planifier les audits** : Exécutez kube-bench au minimum mensuellement, idéalement à chaque changement de configuration
 2. **Prioriser les corrections** : Commencez par les contrôles `FAIL` de Level 1
-3. **Documenter les exceptions** : Certains contrôles peuvent être inapplicables à votre contexte
-4. **Automatiser** : Intégrez kube-bench dans votre CI/CD
-5. **Suivre les versions** : Mettez à jour kube-bench avec votre version Kubernetes
+3. **Documenter les exceptions** : Certains contrôles peuvent être inapplicables à un contexte specifique
+4. **Automatiser** : Intégrer kube-bench dans une pipeline CI/CD
+5. **Suivre les versions** : Mettre à jour kube-bench avec la version Kubernetes convenable
 
 ---
 
