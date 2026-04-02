@@ -1,7 +1,5 @@
 # POC Sécurité Cluster — kube-bench vs Kubescape
 
-> Demo interne — Validation sécurité du cluster k3s (contexte AWX multi-tenant)
-
 ---
 
 ## Partie 0 — Clean complet avant de commencer
@@ -56,6 +54,27 @@ kubectl get pods -A
 ## Partie 2 — Déployer des workloads de test
 
 On va créer un environnement qui ressemble à notre prod : des namespaces clients avec des pods AWX, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
+
+### Ce qu'on déploie
+
+**Namespace `client-alpha`** — simule un client AWX bien configuré :
+- `awx-web` (nginx) : non-root, readOnlyRootFilesystem, drop ALL capabilities, resource limits, probes, seccompProfile RuntimeDefault
+- `awx-postgres` (postgres:15) : non-root, drop ALL, resource limits, probes, fsGroup
+- automountServiceAccountToken: false sur les deux
+
+→ C'est ce qu'on devrait avoir en prod.
+
+**Namespace `bad-practices`** — 6 pods volontairement pourris :
+| Pod | Ce qui est mal |
+|---|---|
+| `bad-privileged` | `privileged: true` + `runAsUser: 0` (root) |
+| `bad-no-limits` | Aucun resource request/limit |
+| `bad-host-ns` | `hostNetwork: true` + `hostPID: true` |
+| `bad-capabilities` | Capabilities `NET_ADMIN` + `SYS_ADMIN` ajoutées |
+| `bad-hostpath` | Monte `/etc` du host en volume |
+| `bad-everything` | Image `:latest`, pas de probes, pas de securityContext, rien |
+
+→ Exactement le genre de trucs qu'un outil de sécu doit détecter.
 
 ```bash
 # créer les namespaces
@@ -172,6 +191,19 @@ Points clés :
 - Il peut scanner des YAML **avant même de déployer** (shift-left en CI/CD)
 - Pas besoin de sudo, il passe par l'API Kubernetes via kubeconfig
 - Il classe les workloads par niveau de risque ("highest-stake workloads")
+
+### Rapports générés
+
+| Commande | Format | Fichier | Usage |
+|---|---|---|---|
+| `--format json --output results/kubescape-cis.json` | JSON | `results/kubescape-cis.json` | Exploitation programmatique, intégration CI/CD, parsing jq |
+| `--format pdf --output results/kubescape-cis.pdf` | PDF | `results/kubescape-cis.pdf` | Livrable pour l'équipe compliance / audit SOC |
+| `--format sarif --output results/kubescape-cis.sarif` | SARIF | `results/kubescape-cis.sarif` | Intégration GitHub Security / GitLab SAST |
+| (par défaut) | pretty-print | terminal | Lecture humaine pendant la démo |
+| `sudo kube-bench run --json` | JSON | `results/kube-bench.json` | Seul format structuré de kube-bench |
+| `sudo kube-bench run` | texte | terminal | Lecture humaine, c'est tout |
+
+→ Kubescape : 4 formats de sortie. kube-bench : texte ou JSON, c'est tout.
 
 ---
 
