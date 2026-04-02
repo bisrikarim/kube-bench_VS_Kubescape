@@ -53,7 +53,7 @@ kubectl get pods -A
 
 ## Partie 2 — Déployer des workloads de test
 
-On va créer un environnement qui ressemble à notre prod : des namespaces clients avec des pods AWX, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
+On va créer des namespaces, et à côté des pods volontairement "mal configurés" pour voir si les outils les détectent.
 
 ### Ce qu'on déploie
 
